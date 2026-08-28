@@ -1,6 +1,6 @@
 #include "CytronMotorDriver.h"
 
-// RC vstupy (interrupt piny) - Arduino Mega 2560 R3
+// RC vstupy (interrupt piny) - Arduino Nano
 // Tank mode: CH1 = levý motor, CH2 = pravý motor
 const byte CH1_PIN = 2;   // levý motor
 const byte CH2_PIN = 3;   // pravý motor

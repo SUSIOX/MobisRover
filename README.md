@@ -1,10 +1,10 @@
 # Cytron Chassis RC Control
 
-Arduino projekt pro tankové ovládání podvozku s dvěma DC motory pomocí Cytron ovladačů. Čte PWM vstupy (např. z RC přijímače nebo z výstupů autopilota jako Durandal + QGroundControl) a řídí motory. **Určeno pro Arduino Mega 2560 R3.**
+Arduino projekt pro tankové ovládání podvozku s dvěma DC motory pomocí Cytron ovladačů. Čte PWM vstupy (např. z RC přijímače nebo z výstupů autopilota jako Durandal + QGroundControl) a řídí motory. **Určeno pro Arduino Nano.**
 
 ## Hardware
 
-- Arduino Mega 2560 R3
+- Arduino Nano (ATmega328P)
 - 2× Cytron MD motor driver (nebo podobné s knihovnou `CytronMotorDriver`)
 - Standardní RC přijímač se 2 samostatnými kanály (PWM)
 - Podvozek s levým a pravým motorem
@@ -21,7 +21,7 @@ Arduino projekt pro tankové ovládání podvozku s dvěma DC motory pomocí Cyt
 | Motor R PWM         | D9          | pravý motor           |
 | Motor R DIR         | D10         | pravý motor směr      |
 
-Mega 2560 má 5V tolerantní piny, takže běžný RC receiver lze připojit přímo (pokud dává 5V PWM).
+Arduino Nano má 5V logiku, takže běžný RC receiver s 5V PWM lze připojit přímo na piny D2 a D3.
 
 ## Požadovaná knihovna
 
@@ -39,7 +39,7 @@ Nebo stáhni z [Cytron GitHub](https://github.com/CytronTechnologies/CytronMotor
 - Mapuje hodnoty 1000–2000 µs na rychlost -MAX_PWM až MAX_PWM (omezeno dle napětí, při 4S plně nabité ~ -182 až 182).
 - **Tank mode:** CH1 přímo ovládá levý motor, CH2 přímo ovládá pravý motor.
 - **Failsafe:** zastaví motory, pokud je signál mimo 900–2100 µs, nebo pokud nepřijde nový pulz po dobu 50 ms.
-- Atomic read `volatile int` s vypnutými přerušeními – nutné pro 8bit AVR (Mega).
+- Atomic read `volatile int` s vypnutými přerušeními – nutné pro 8bit AVR (Nano / ATmega328P).
 - **Napěťové omezení motoru:** max PWM se spočítá z poměru `MOTOR_VOLTAGE / BATTERY_VOLTAGE_MAX`, aby se při plném plynu neposlalo do 12V motoru víc než 12V (např. na 4S baterii plně nabité 16.8V → ~182 PWM místo 255).
 
 ## Test sekvence
@@ -88,8 +88,8 @@ arduino-cli core install arduino:avr
 # 3. Nainstaluj knihovnu pro Cytron ovladače
 arduino-cli lib install "Cytron Motor Drivers Library"
 
-# 4. Zkompiluj pro Mega 2560
-arduino-cli compile --fqbn arduino:avr:mega .
+# 4. Zkompiluj pro Nano
+arduino-cli compile --fqbn arduino:avr:nano .
 
 # 5. Zjisti port desky
 arduino-cli board list
@@ -97,7 +97,7 @@ arduino-cli board list
 # Na macOS typicky: /dev/cu.usbmodem...
 
 # 6. Nahraj do desky (nahraď PORT správným portem)
-arduino-cli upload -p /dev/ttyACM0 --fqbn arduino:avr:mega .
+arduino-cli upload -p /dev/ttyACM0 --fqbn arduino:avr:nano .
 ```
 
 **Tip pro Linux:** Pokud upload selhává kvůli právům, přidej uživatele do skupiny `dialout`:
@@ -110,7 +110,7 @@ sudo usermod -a -G dialout $USER
 nebo použij `sudo`:
 
 ```bash
-sudo arduino-cli upload -p /dev/ttyACM0 --fqbn arduino:avr:mega .
+sudo arduino-cli upload -p /dev/ttyACM0 --fqbn arduino:avr:nano .
 ```
 
 ## Použití s Durandal + QGroundControl
