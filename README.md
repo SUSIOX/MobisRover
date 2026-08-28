@@ -1,6 +1,6 @@
 # Cytron Chassis RC Control
 
-Arduino projekt pro tankové ovládání podvozku s dvěma DC motory pomocí Cytron ovladačů a RC přijímače. **Určeno pro Arduino Mega 2560 R3.**
+Arduino projekt pro tankové ovládání podvozku s dvěma DC motory pomocí Cytron ovladačů. Čte PWM vstupy (např. z RC přijímače nebo z výstupů autopilota jako Durandal + QGroundControl) a řídí motory. **Určeno pro Arduino Mega 2560 R3.**
 
 ## Hardware
 
@@ -113,16 +113,32 @@ nebo použij `sudo`:
 sudo arduino-cli upload -p /dev/ttyACM0 --fqbn arduino:avr:mega .
 ```
 
-## Ovládání přes Durandal + QGroundControl (alternativa)
+## Použití s Durandal + QGroundControl
 
-Tento repozitář obsahuje řešení pro Arduino Mega. Pokud v budoucnu přejdeš na autopilota **Holybro Durandal** se **QGroundControl**, postup je následující:
+Tento Arduino kód slouží jako **převodník mezi Durandal a Cytron ovladači**. Durandal sám nedokáže přímo řídit motory v **Cytron PWM_DIR** režimu, proto z něj čteme PWM výstupy a Arduino řídí motory.
 
-1. **Firmware:** Nahraj na Durandal firmware **ArduPilot Rover**.
-2. **Kalibrace v QGC:** V sekci Radio nastav kanály pro tankové řízení (např. CH1 = levý pás, CH3 = pravý pás, záleží na vysílači).
-3. **Tank mode:** Zapni diferenciální řízení parametrem `SKID_STEER_OUT = 1`.
-4. **Výstupy pro motory:** Nastav například:
-   - `SERVO1_FUNCTION = ThrottleLeft`
-   - `SERVO3_FUNCTION = ThrottleRight`
-5. **Připojení motorů:** Durandal vydává standardní PWM 1000–2000 µs. Pokud zůstaneš u **Cytron PWM_DIR** driverů, budeš potřebovat převod signálu, nebo použít ovladač/ESC, který přímo přijímá 1000–2000 µs PWM.
+### Zapojení
 
-> QGroundControl je ground station pro konfiguraci – samotné řízení běží na Durandalu.
+- Výstup z Durandalu pro **pás 1 (levý)** → Arduino pin **D2** (CH1)
+- Výstup z Durandalu pro **pás 2 (pravý)** → Arduino pin **D3** (CH2)
+- Arduino piny **D5/D6** → levý Cytron driver (PWM/DIR)
+- Arduino piny **D9/D10** → pravý Cytron driver (PWM/DIR)
+
+### Nastavení v QGroundControl / ArduPilot
+
+1. **Kalibrace RC** v QGC: namapuj vysílač tak, aby:
+   - **CH1 = pás 1 (levý)**
+   - **CH2 = pás 2 (pravý)**
+2. **Výstupy Durandalu** nastav jako **RCPassThru** pro přímé přeposlání PWM:
+   - `SERVO1_FUNCTION = 51` → výstup 1 = RC vstup 1 (pás 1, levý)
+   - `SERVO3_FUNCTION = 52` → výstup 3 = RC vstup 2 (pás 2, pravý)
+
+   > Čísla funkcí: `51 = RCPassThru1`, `52 = RCPassThru2`, atd. (51–66 = RCPassThru1–16). Tím se PWM signál z RC vstupu přímo přepošle na daný výstup bez mixingu.
+3. Připoj výstupy z Durandalu (např. MAIN OUT 1 a MAIN OUT 3) na Arduino D2 a D3.
+
+### Proč tam je Arduino?
+
+- **Durandal** vydává standardní PWM 1000–2000 µs, ale neumí přímo generovat signál pro **Cytron PWM_DIR** driver (potřebuje PWM + DIR).
+- **Arduino** přečte PWM z Durandalu a pomocí knihovny `CytronMotorDriver` řídí směr i rychlost každého motoru.
+
+> QGroundControl slouží pro konfiguraci Durandalu. Arduino převádí jeho PWM výstupy na ovládání motorů.
