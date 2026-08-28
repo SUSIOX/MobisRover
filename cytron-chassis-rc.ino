@@ -11,7 +11,7 @@ const unsigned long FAILSAFE_TIMEOUT_US = 50000;  // 50 ms bez pulzu = ztráta s
 // 12V motor na 4S baterii (max 16.8 V) -> omezit PWM, aby motor nedostal > 12V
 const float MOTOR_VOLTAGE = 12.0;       // jmenovité napětí motoru [V]
 const float BATTERY_VOLTAGE_MAX = 16.8; // maximální napětí baterie (4S plně nabitá) [V]
-const int MAX_PWM = (int)(255.0 * MOTOR_VOLTAGE / BATTERY_VOLTAGE_MAX); // max PWM odpovídající 12V
+const int MAX_PWM = constrain((int)(255.0 * MOTOR_VOLTAGE / BATTERY_VOLTAGE_MAX), 0, 255); // max PWM odpovídající 12V, omezeno na platný rozsah
 
 volatile unsigned long ch1_start = 0;
 volatile int ch1_value = 1500;
@@ -82,6 +82,7 @@ void loop() {
     delay(50);                     // debounce
     if (digitalRead(TEST_BTN) == LOW) {
       runTestSequence();
+      while (digitalRead(TEST_BTN) == LOW) { delay(10); }  // čekat na uvolnění tlačítka
     }
     return;
   }
