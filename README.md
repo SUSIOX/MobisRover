@@ -36,7 +36,7 @@ Nebo stáhni z [Cytron GitHub](https://github.com/CytronTechnologies/CytronMotor
 ## Funkce
 
 - Čte RC signály z přijímače pomocí přerušení na pinech D2 a D3.
-- Mapuje hodnoty 1000–2000 µs na rychlost -255 až 255.
+- Mapuje hodnoty 1000–2000 µs na rychlost -MAX_PWM až MAX_PWM (omezeno dle napětí, při 4S plně nabité ~ -182 až 182).
 - **Tank mode:** CH1 přímo ovládá levý motor, CH2 přímo ovládá pravý motor.
 - **Failsafe:** zastaví motory, pokud je signál mimo 900–2100 µs, nebo pokud nepřijde nový pulz po dobu 50 ms.
 - Atomic read `volatile int` s vypnutými přerušeními – nutné pro 8bit AVR (Mega).
@@ -112,3 +112,17 @@ nebo použij `sudo`:
 ```bash
 sudo arduino-cli upload -p /dev/ttyACM0 --fqbn arduino:avr:mega .
 ```
+
+## Ovládání přes Durandal + QGroundControl (alternativa)
+
+Tento repozitář obsahuje řešení pro Arduino Mega. Pokud v budoucnu přejdeš na autopilota **Holybro Durandal** se **QGroundControl**, postup je následující:
+
+1. **Firmware:** Nahraj na Durandal firmware **ArduPilot Rover**.
+2. **Kalibrace v QGC:** V sekci Radio nastav kanály pro tankové řízení (např. CH1 = levý pás, CH3 = pravý pás, záleží na vysílači).
+3. **Tank mode:** Zapni diferenciální řízení parametrem `SKID_STEER_OUT = 1`.
+4. **Výstupy pro motory:** Nastav například:
+   - `SERVO1_FUNCTION = ThrottleLeft`
+   - `SERVO3_FUNCTION = ThrottleRight`
+5. **Připojení motorů:** Durandal vydává standardní PWM 1000–2000 µs. Pokud zůstaneš u **Cytron PWM_DIR** driverů, budeš potřebovat převod signálu, nebo použít ovladač/ESC, který přímo přijímá 1000–2000 µs PWM.
+
+> QGroundControl je ground station pro konfiguraci – samotné řízení běží na Durandalu.
