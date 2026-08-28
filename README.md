@@ -94,10 +94,13 @@ arduino-cli compile --fqbn arduino:avr:nano .
 # 5. Zjisti port desky
 arduino-cli board list
 # Na Linuxu typicky: /dev/ttyACM0 nebo /dev/ttyUSB0
-# Na macOS typicky: /dev/cu.usbmodem...
+# Na macOS typicky: /dev/cu.usbserial...
 
 # 6. Nahraj do desky (nahraď PORT správným portem)
+# Pro Nano s novým bootloaderem:
 arduino-cli upload -p /dev/ttyACM0 --fqbn arduino:avr:nano .
+# Pro Nano s původním/klonovým bootloaderem (často CH340):
+arduino-cli upload -p /dev/ttyACM0 --fqbn arduino:avr:nano:cpu=atmega328old .
 ```
 
 **Tip pro Linux:** Pokud upload selhává kvůli právům, přidej uživatele do skupiny `dialout`:
